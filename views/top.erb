@@ -1,0 +1,26 @@
+<div class="card">
+  <div class="card-content">
+  <h1 class="title is-3">メモ一覧</h1>
+  </div>
+</div>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">タイトル</p>
+  </header>
+  <% @memos.each do |memo|  %>
+  <div class="card-content">
+    <a href="/memos/show/<%= memo["id"] %>"><%= h(memo["title"]) %></a>
+  </div>
+  <% end %>
+</div>
+
+
+<a href="/memos/new">
+    <button class="button is-primary">
+    <span class="icon">
+        <i class="fas fa-check"></i>
+    </span>
+    <span>メモを追加する</span>
+    </button>
+</a>
