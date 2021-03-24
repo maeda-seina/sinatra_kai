@@ -42,8 +42,6 @@ get '/memos/:id/edit' do
   erb :edit
 end
 
-enable :method_override
-
 patch '/memos/:id' do
   @title = params[:title]
   @body = params[:body]
