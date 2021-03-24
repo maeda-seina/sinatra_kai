@@ -6,6 +6,12 @@ require 'erb'
 require 'securerandom'
 require 'json'
 
+def parameters_and_jsonfile_read
+  @title = params[:title]
+  @body = params[:body]
+  @memo = JSON.parse(File.read("memos/#{params[:id]}.json"), symbolize_names: true)
+end
+
 get '/' do
   files = Dir.glob('memos/*').sort_by { |file| File.mtime(file) }
   @memos = files.map { |file| JSON.parse(File.read(file)) }
@@ -27,16 +33,12 @@ post '/memos' do
 end
 
 get '/memos/show/:id' do
-  @title = params[:title]
-  @body = params[:body]
-  @memo = JSON.parse(File.read("memos/#{params[:id]}.json"), symbolize_names: true)
+  parameters_and_jsonfile_read
   erb :show
 end
 
 get '/memos/:id/edit' do
-  @title = params[:title]
-  @body = params[:body]
-  @memo = JSON.parse(File.read("memos/#{params[:id]}.json"), symbolize_names: true)
+  parameters_and_jsonfile_read
   erb :edit
 end
 
