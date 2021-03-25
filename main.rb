@@ -4,17 +4,35 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'erb'
 require 'securerandom'
-require 'json'
+require 'pg'
 
-def parameters_and_jsonfile_read
-  @title = params[:title]
-  @body = params[:body]
-  @memo = JSON.parse(File.read("memos/#{params[:id]}.json"), symbolize_names: true)
+configure do
+  set :connection, PG.connect(dbname: 'memo')
+end
+
+def all
+  settings.connection.exec('SELECT * FROM Memos ORDER BY id ASC')
+end
+
+def find(id)
+  find_memo = settings.connection.exec('SELECT * FROM Memos WHERE id = $1', [id])
+  find_memo[0]
+end
+
+def create(title, body)
+  settings.connection.exec('INSERT INTO Memos(id, title, body) VALUES(DEFAULT, $1, $2)', [title, body])
+end
+
+def update(title, body, id)
+  settings.connection.exec('UPDATE Memos SET title = $1, body = $2 WHERE id = $3', [title, body, id])
+end
+
+def delete(id)
+  settings.connection.exec('DELETE FROM Memos WHERE id = $1', [id])
 end
 
 get '/' do
-  files = Dir.glob('memos/*').sort_by { |file| File.mtime(file) }
-  @memos = files.map { |file| JSON.parse(File.read(file)) }
+  @memos = all
   erb :top
 end
 
@@ -23,37 +41,27 @@ get '/memos/new' do
 end
 
 post '/memos' do
-  @title = params[:title]
-  @body = params[:body]
-  hash = { 'id' => SecureRandom.uuid, 'title' => @title, 'body' => @body }
-  File.open("memos/#{hash['id']}.json", 'w') do |file|
-    file.puts JSON.pretty_generate(hash)
-  end
-  redirect "/memos/show/#{hash['id']}"
+  create(params[:title], params[:body])
+  redirect '/'
 end
 
 get '/memos/show/:id' do
-  parameters_and_jsonfile_read
+  @memo = find(params[:id])
   erb :show
 end
 
 get '/memos/:id/edit' do
-  parameters_and_jsonfile_read
+  @memo = find(params[:id])
   erb :edit
 end
 
 patch '/memos/:id' do
-  @title = params[:title]
-  @body = params[:body]
-  memo = { 'id' => params[:id], 'title' => @title, 'body' => @body }
-  File.open("memos/#{params[:id]}.json", 'w') do |io|
-    io.puts(JSON.pretty_generate(memo))
-  end
+  update(params[:title], params[:body], params[:id])
   redirect "/memos/show/#{params[:id]}"
 end
 
 delete '/memos/:id' do
-  File.delete("memos/#{params[:id]}.json")
+  delete(params[:id])
   redirect '/'
 end
 

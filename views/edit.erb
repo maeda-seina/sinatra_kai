@@ -4,9 +4,9 @@
   </div>
 </div>
 <div class="card">
-<form action="/memos/<%= @memo[:id] %>" method="post">
-    <input type="text" name="title" value=<%= h(@memo[:title]) %> required><br>
-    <input name="body" rows="5" value=<%= h(@memo[:body]) %> required><br>
+<form action="/memos/<%= @memo["id"] %>" method="post">
+    <input type="text" name="title" value=<%= h(@memo["title"]) %> required><br>
+    <input name="body" rows="5" value=<%= h(@memo["body"]) %> required><br>
     <input type="hidden" name="_method" value="patch">
     <input type="submit" value="変更" class="button is-success">
 </form>
