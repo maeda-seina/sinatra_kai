@@ -1,0 +1,29 @@
+<div class="card">
+  <div class="card-content">
+  <h1 class="title is-4">メモ詳細</h1>
+  </div>
+</div>
+
+<div class="card">
+  <div class="is-size-5">
+      タイトル: <%= h(@memo[:title]) %>
+  </div>  
+  <div class="is-size-5">
+      内容: <%= h(@memo[:body]) %>
+  </div>
+</div>
+
+<a href="/memos/<%= @memo[:id] %>/edit">
+  <div class="button is-primary">
+  編集する
+  </div>
+</a>
+
+<form action="/memos/<%= @memo[:id] %>" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <input type="submit" value="削除" class="button is-danger">
+</form>
+
+<div class="button is-primary">
+  <a href="/">トップページへ戻る</a> 
+</div>
