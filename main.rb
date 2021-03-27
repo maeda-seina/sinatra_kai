@@ -15,8 +15,7 @@ def all
 end
 
 def find(id)
-  find_memo = settings.connection.exec('SELECT * FROM Memos WHERE id = $1', [id])
-  find_memo[0]
+  settings.connection.exec('SELECT * FROM Memos WHERE id = $1', [id]).first
 end
 
 def create(title, body)
