@@ -4,17 +4,15 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'erb'
 require 'securerandom'
-require 'json'
+require 'pg'
+require './memo'
 
-def parameters_and_jsonfile_read
-  @title = params[:title]
-  @body = params[:body]
-  @memo = JSON.parse(File.read("memos/#{params[:id]}.json"), symbolize_names: true)
+def memo
+  Memo.new
 end
 
 get '/' do
-  files = Dir.glob('memos/*').sort_by { |file| File.mtime(file) }
-  @memos = files.map { |file| JSON.parse(File.read(file)) }
+  @memos = memo.all
   erb :top
 end
 
@@ -23,37 +21,27 @@ get '/memos/new' do
 end
 
 post '/memos' do
-  @title = params[:title]
-  @body = params[:body]
-  hash = { 'id' => SecureRandom.uuid, 'title' => @title, 'body' => @body }
-  File.open("memos/#{hash['id']}.json", 'w') do |file|
-    file.puts JSON.pretty_generate(hash)
-  end
-  redirect "/memos/show/#{hash['id']}"
+  memo.create(params[:title], params[:body])
+  redirect '/'
 end
 
 get '/memos/show/:id' do
-  parameters_and_jsonfile_read
+  @memo = memo.find(params[:id])
   erb :show
 end
 
 get '/memos/:id/edit' do
-  parameters_and_jsonfile_read
+  @memo = memo.find(params[:id])
   erb :edit
 end
 
 patch '/memos/:id' do
-  @title = params[:title]
-  @body = params[:body]
-  memo = { 'id' => params[:id], 'title' => @title, 'body' => @body }
-  File.open("memos/#{params[:id]}.json", 'w') do |io|
-    io.puts(JSON.pretty_generate(memo))
-  end
+  memo.update(params[:title], params[:body], params[:id])
   redirect "/memos/show/#{params[:id]}"
 end
 
 delete '/memos/:id' do
-  File.delete("memos/#{params[:id]}.json")
+  memo.delete(params[:id])
   redirect '/'
 end
 
